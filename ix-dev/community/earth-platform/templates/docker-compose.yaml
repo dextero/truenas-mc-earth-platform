@@ -1,0 +1,40 @@
+{% set tpl = ix_lib.base.render.Render(values) %}
+
+{% set c1 = tpl.add_container(values.consts.earth_platform_container_name, values.earth_platform.image_selector) %}
+{% set caps = namespace(x=["CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID", "NET_RAW"]) %}
+{% do c1.healthcheck.set_custom_test(["CMD", "mc-health"]) %}
+{% do c1.healthcheck.set_start_period(300) %}
+
+{% do c1.add_caps(caps.x) %}
+
+{% do c1.environment.add_env("GUI", "FALSE") %}
+{% do c1.environment.add_env("EULA", values.earth_platform.eula|string|upper) %}
+{% do c1.environment.add_env("TYPE", "NEOFORGE") %}
+{% do c1.environment.add_env("VERSION", values.earth_platform.version) %}
+{% do c1.environment.add_env("LEVEL_TYPE", values.earth_platform.level_type) %}
+{% do c1.environment.add_env("MOTD", values.earth_platform.motd) %}
+{% do c1.environment.add_env("MODE", values.earth_platform.mode) %}
+{% do c1.environment.add_env("DIFFICULTY", values.earth_platform.difficulty) %}
+{% do c1.environment.add_env("MAX_PLAYERS", values.earth_platform.max_players) %}
+{% do c1.environment.add_env("VIEW_DISTANCE", values.earth_platform.view_distance) %}
+{% do c1.environment.add_env("SIMULATION_DISTANCE", values.earth_platform.simulation_distance) %}
+{% do c1.environment.add_env("PVP", values.earth_platform.pvp|string|upper) %}
+{% do c1.environment.add_env("ALLOW_FLIGHT", values.earth_platform.allow_flight|string|upper) %}
+{% do c1.environment.add_env("ONLINE_MODE", values.earth_platform.online_mode|string|upper) %}
+{% do c1.environment.add_env("MEMORY", values.earth_platform.memory) %}
+{% if values.earth_platform.seed %}
+  {% do c1.environment.add_env("SEED", values.earth_platform.seed) %}
+{% endif %}
+{% if values.earth_platform.ops %}
+  {% do c1.environment.add_env("OPS", values.earth_platform.ops | join(",")) %}
+{% endif %}
+{% if values.earth_platform.whitelist %}
+  {% do c1.environment.add_env("WHITELIST", values.earth_platform.whitelist | join(",")) %}
+{% endif %}
+
+{% do c1.environment.add_user_envs(values.earth_platform.additional_envs) %}
+
+{% do c1.add_port(values.network.server_port) %}
+{% do c1.add_storage("/data", values.storage.data) %}
+
+{{ tpl.render() | tojson }}
